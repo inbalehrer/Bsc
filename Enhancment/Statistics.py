@@ -6,6 +6,11 @@ from pm4py.statistics.rework.cases.log import get as cases_rework_get
 
 
 def rework(el):
+    '''
+    Analyse how many traces include reworked activities
+    :param el: event log
+    :return: dict of all activities that were reworked and the corresponding cases
+    '''
     from pm4py import get_rework_cases_per_activity
     dic = get_rework_cases_per_activity(el)
     for i in dic:
@@ -16,8 +21,8 @@ def rework(el):
 def sojo(el):
     '''
     Print Sojourn Time for activities in the event log, AVG duration of activity
-    :param el:
-    :return:
+    :param el: event log
+    :return: dict of ech activity and the corresponding sojo time
     '''
     from pm4py.statistics.sojourn_time.log import get as soj_time_get
     sojo_time = soj_time_get.apply(el, parameters={soj_time_get.Parameters.TIMESTAMP_KEY: "endtime",
@@ -29,7 +34,7 @@ def sojo(el):
 def add_event_dur(df):
     '''
     Add event duration column to a data frame or event log
-    :param el:
+    :param el: event log
     :return: data frame that contains the duration for each event
     '''
     if type(df) != pd.DataFrame:
@@ -43,9 +48,8 @@ def add_event_dur(df):
 def statistics_event_duration(df):
     '''
     Return a string that includes for each phase the avg duration, median and quantiles
-    :param el:
-    :param event_name:
-    :return:
+    :param el: event log
+    :return: readable activity with each activity and the corresponding time measures average time, median, 0.25 and 0.75
     '''
     df = add_event_dur(df)
     phases = Discovery.Model.get_phases(df)
@@ -79,7 +83,7 @@ def get_batch_id(batches):
     '''
     Collect all traces ID that are part of a batch list
     :param batches:
-    :return:
+    :return: dict with each batch and the corresponding cases it which are involved in the batch
     '''
     id_dict = {}
     for b in batches:
@@ -95,9 +99,9 @@ def get_batch_id(batches):
 def batch_time_diff(df, batches):
     '''
     Print the time difference between activities in a batch
-    :param df:
-    :param batches:
-    :return:
+    :param df: dataframe
+    :param batches: batches list with the corresponding cases' id
+    :return:data frame that includes time difference between previous activity / batch
     '''
     ids_batch = get_batch_id(batches=batches)
     for i in ids_batch:
@@ -110,22 +114,3 @@ def batch_time_diff(df, batches):
         dfc["time_diff"] = dfc["created"].diff()
     return dfc
 
-
-def social_net(el, path):
-    '''
-    Create and view hand over and working together social net works and saves them in a given path
-    :param el: event log to analyse social net
-    :param path: location to save social net
-    :return: -
-    '''
-    hw_values = pm4py.discover_handover_of_work_network(el)
-    pm4py.save_vis_sna(hw_values, f"{path}/ho.html")
-
-    wt_values = pm4py.discover_working_together_network(el)
-    pm4py.save_vis_sna(wt_values, f"{path}/wt.html")
-
-
-def rework(el):  # Both case and events!
-    rework = pm4py.get_rework_cases_per_activity(el)
-    dictio = cases_rework_get.apply(el)
-    return rework

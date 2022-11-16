@@ -5,7 +5,12 @@ from Enhancment import Statistics, Plots
 from Discovery import Filters
 
 def to_eventlog(df, title):
-    # el = pm4py.format_dataframe(df, case_id='ticket', activity_key='newstring', timestamp_key='created')
+    '''
+    Convert data frame to event log and saves the XES file in an additional foler
+    :param df: Dataframe
+    :param title: Title for path
+    :return: event log
+    '''
     el = pm4py.format_dataframe(df, case_id='ticket', activity_key='phase', timestamp_key='created')
     event_log = pm4py.convert_to_event_log(el)
     pm4py.write_xes(el, f"Data/xes/{title}.xes")
@@ -73,7 +78,7 @@ if __name__ == "__main__":
         batches = Statistics.batch(event_logs[i])
         Statistics.batch_time_diff(pm4py.convert_to_dataframe(event_logs[i]), batches)
 
-        Statistics.social_net(event_logs[i], f"{path_socialnet}")
+        Visual.social_net(event_logs[i], f"{path_socialnet}")
 
         # Create heat map for each phase in the project
         phases = Model.get_phases(data_frames[i])

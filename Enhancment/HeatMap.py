@@ -10,11 +10,11 @@ def heatmap(data, row_labels, col_labels, xlabel=None, ylabel=None, ax=None, cba
     Parameters
     ----------
     data
-        A 2D numpy array of shape (N, M).
+        A 2D numpy array
     row_labels
-        A list or array of length N with the labels for the rows.
+        A list or array of length n with labels
     col_labels
-        A list or array of length M with the labels for the columns.
+        A list or array of length m with labels
     ax
         A `matplotlib.axes.Axes` instance to which the heatmap is plotted.  If
         not provided, use current axes or create a new one.  Optional.
@@ -28,8 +28,7 @@ def heatmap(data, row_labels, col_labels, xlabel=None, ylabel=None, ax=None, cba
 
     if not ax:
         ax = plt.gca()
-
-    # Plot the heatmap
+    # create heatmap
     img = ax.imshow(data, aspect='auto', vmin=0, vmax=20, **kwargs)
 
     # Create colorbar
@@ -91,8 +90,6 @@ def annotate_heatmap(im, data=None, valfmt="{x:.2f}", textcolors=["black", "whit
 
     if not isinstance(data, (list, np.ndarray)):
         data = im.get_array()
-
-    # Normalize the threshold to the images color range.
     if threshold is not None:
         threshold = im.norm(threshold)
     else:
@@ -152,4 +149,3 @@ def heatmap_average_values(df, phase, path):
     fig.tight_layout()
     plt.savefig(path, format='png',
                 bbox_inches='tight')
-    #plt.show()

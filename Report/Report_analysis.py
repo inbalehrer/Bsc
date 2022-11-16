@@ -10,6 +10,10 @@ from main import to_eventlog
 
 
 def get_analysis():
+    '''
+    Analysis and statistics of event logs based on different parameters
+    :return: dict with title and results of each analysis
+    '''
     df_a = pd.read_csv("../Data/csv/a.csv", ";")
     df_b = pd.read_csv("../Data/csv/b.csv", ";")
     df_c = pd.read_csv("../Data/csv/c.csv", ";")
@@ -37,9 +41,8 @@ def get_analysis():
 def avg_traces_duration(el):
     '''
     Return an avg time for traces in event log
-    :param title:
-    :param el:
-    :return:
+    :param el: event log
+    :return: readable string of the results: Avg, median, 0.25 and 0.75
     '''
     traces_dur = traces_duration(el)
     traces_dur_df = pd.DataFrame.from_dict(traces_dur.items())
@@ -53,6 +56,7 @@ def avg_traces_duration(el):
 
 def traces_duration(el):
     """
+    Calculate the duration of traces in the event log
     :param el: event log
     :return: Returns a dictionary contains the duration (in timedelta) of all traces in the event log
     """
@@ -65,17 +69,32 @@ def traces_duration(el):
 
 
 def first_event(t):
+    '''
+    Return first event of a trace
+    :param t: trace
+    :return: first event of a trace
+    '''
     first_event = t._list[0]
     return first_event
 
 
 def last_event(t):
+    '''
+    Return last event of a trace
+    :param t: trace
+    :return: last event of a trace
+    '''
     trace_index = len(t)
     last_event = t._list[trace_index - 1]
     return last_event
 
 
 def skipped_statistics(el):
+    '''
+    Analysis of skipped activities and their distribution over different attributes values
+    :param el: event log
+    :return: readable string with the results
+    '''
     tickets_skipped, skipped_ann_el = Filters.short_activity(el, 10)
     skipped_traces = get_skipped_tickets(el, tickets_skipped)
     tickets_skipped_prio = skipped_per_prio(el, skipped_traces)
@@ -89,26 +108,26 @@ def skipped_statistics(el):
     return s
 
 
-def get_skipped_tickets(df, tickets_skipped):
+def get_skipped_tickets(df, skipped_traces):
     '''
     Return a list of all traces that include skipped activity
-    :param df:
-    :param tickets_skipped:
+    :param df: data frame
+    :param skipped_traces: dict contain all id of skipped traces and trace
     :return:
     '''
-    tickets = tickets_skipped.keys()
-    tickets_info = []
+    traces = skipped_traces.keys()
+    traces_info = []
     # Collect all traces where a phase is skipped
     for t in df:
-        if t.attributes['concept:name'] in tickets: tickets_info.append(t)
-    return tickets_info
+        if t.attributes['concept:name'] in traces: traces_info.append(t)
+    return traces_info
 
 
-def skipped_per_prio(el, tickets_skipped):
+def skipped_per_prio(el, traces_skipped):
     '''
     Return to each priority how many issues skipped an activity
-    :param df:
-    :param tickets_skipped:
+    :param df: data frame
+    :param traces_skipped: list of traces that include skipped activity
     :return: dict: key - priority value - number of times that got skipped
     '''
     skipped_per_prio = {}
@@ -116,18 +135,17 @@ def skipped_per_prio(el, tickets_skipped):
     prios = Model.priorities(pm4py.convert_to_dataframe(el))
     for i in prios:
         skipped_per_prio[i] = 0
-        for t in tickets_skipped:
+        for t in traces_skipped:
             if t._list[0]._dict['priority'] == i: skipped_per_prio[i] += 1
-        skipped_prec[i] = f"{skipped_per_prio[i]} ({round((skipped_per_prio[i] * 100) / len(tickets_skipped), 2)}%)"
+        skipped_prec[i] = f"{skipped_per_prio[i]} ({round((skipped_per_prio[i] * 100) / len(traces_skipped), 2)}%)"
     return skipped_prec
 
 
-def skipped_per_phase(el, tickets_skipped):
+def skipped_per_phase(el, traces_skipped):
     '''
     Return to each phase how many issues skipped an activity
-
-    :param df:
-    :param tickets_skipped:
+    :param df: data frame
+    :param traces_skipped: list of traces that include skipped activity
     :return:dict: key - phase value - number of times that got skipped
     '''
     skipped_per_phase = {}
@@ -135,9 +153,9 @@ def skipped_per_phase(el, tickets_skipped):
     phases = Model.get_phases(pm4py.convert_to_dataframe(el))
     for i in phases:
         skipped_per_phase[i] = 0
-        for t in tickets_skipped.values():
+        for t in traces_skipped.values():
             if t == i: skipped_per_phase[i] += 1
-        skipped_prec[i] = f"{skipped_per_phase[i]} ({round((skipped_per_phase[i] * 100) / len(tickets_skipped), 2)}%)"
+        skipped_prec[i] = f"{skipped_per_phase[i]} ({round((skipped_per_phase[i] * 100) / len(traces_skipped), 2)}%)"
 
     return skipped_prec
 
@@ -164,7 +182,7 @@ def print_details(el):
     """
     Information log of following properties: Event and Cases Numbers, File columns and data.
     :param el: The event log
-    :return:
+    :return: readable string with the event log details
     """
     num_events = len(el)
     num_cases = len(el.ticket.unique())
@@ -179,8 +197,8 @@ def print_details(el):
 def get_statistics_by(el):
     '''
     Return appearance statistics of each priority and issue type in an event log
-    :param el:
-    :return:
+    :param el: event log
+    :return: readable string with the event log statistics
     '''
     prio_per_el = get_prio_el(el)
     issuetype_per_el = get_issuetype_el(el)
@@ -198,8 +216,8 @@ def get_statistics_by(el):
 def get_prio_el(el):
     '''
     Return the distribution of each priority in the event log
-    :param el:
-    :return:
+    :param el: event log
+    :return: dict with number of traces in different priorities
     '''
     prios_el = Model.priorities(pm4py.convert_to_dataframe(el))
     el_by_prio = {}
@@ -213,8 +231,8 @@ def get_prio_el(el):
 def get_issuetype_el(el):
     '''
     Return the distribution of each issue type in the event log
-    :param el:
-    :return:
+    :param el: event log
+    :return:dict with number of traces in different  issue types
     '''
     issuetype_el = Model.tasks(pm4py.convert_to_dataframe(el))
     el_by_issuetype = {}
@@ -226,6 +244,12 @@ def get_issuetype_el(el):
 
 
 def get_top_n_var(dictvar, n):
+    '''
+    Return top n variants of an event log
+    :param dictvar: dict of all variants in an event log
+    :param n: number of requieren top variants
+    :return: top n variants as a string and a sorted list of all variants in an event log
+    '''
     sorted_l = sorted(dictvar.items(), key=lambda x: len(x[1]), reverse=True)
     x = sorted_l[:n]
     str_x = ""
